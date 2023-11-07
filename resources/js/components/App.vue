@@ -5,20 +5,31 @@ export default {
     data() {
         return {
             dropzone: null,
+            title: null,
+            content: null,
         }
     },
     methods: {
         store() {
-            const images = new FormData()
+            const data = new FormData()
             const files = this.dropzone.getAcceptedFiles()
             files.forEach(file => {
-                images.append('images[]', file)
+                data.append('images[]', file)
+                this.dropzone.removeFile(file)
             })
-            axios.post('/api/posts', images)
-        }
+            data.append('title', this.title)
+            data.append('content', this.content)
+            this.title = null
+            this.content = null
+            axios.post('/api/posts', data)
+        },
     },
     mounted() {
-        this.dropzone = new Dropzone(this.$refs.dropzone, { url: '/api/posts', autoProcessQueue: false })
+        this.dropzone = new Dropzone(this.$refs.dropzone, {
+            url: '/api/posts',
+            autoProcessQueue: false,
+            addRemoveLinks: true
+        })
     }
 }
 </script>
@@ -26,7 +37,7 @@ export default {
     <div class="container pt-5">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" id="title" class="form-control" placeholder="Some title">
+            <input v-model="title" type="text" id="title" class="form-control" placeholder="Some title">
         </div>
         <div class="mb-3">
             <label for="image">Image</label>
@@ -34,7 +45,7 @@ export default {
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <textarea class="form-control" id="content" placeholder="Some content"></textarea>
+            <textarea v-model="content" class="form-control" id="content" placeholder="Some content"></textarea>
         </div>
         <div class="mb3">
             <button @click.prevent="store" type="button" class="btn btn-primary">Add</button>
