@@ -5,8 +5,12 @@ export default {
     data() {
         return {
             dropzone: null,
-            title: null,
-            content: null,
+            title: '',
+            content: '',
+            post: {
+                title: '',
+                content: '',
+            },
         }
     },
     methods: {
@@ -23,6 +27,12 @@ export default {
             this.content = null
             axios.post('/api/posts', data)
         },
+        getPost() {
+            axios.get('/api/posts/latest')
+                .then(res => {
+                    this.post = res.data.data
+                })
+        }
     },
     mounted() {
         this.dropzone = new Dropzone(this.$refs.dropzone, {
@@ -30,6 +40,7 @@ export default {
             autoProcessQueue: false,
             addRemoveLinks: true
         })
+        this.getPost()
     }
 }
 </script>
@@ -49,6 +60,21 @@ export default {
         </div>
         <div class="mb3">
             <button @click.prevent="store" type="button" class="btn btn-primary">Add</button>
+        </div>
+        <div class="pt-5">
+            <h1>Latest post</h1>
+            <div v-if="post" class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap mb-3">
+                        <div v-for="image in post.images" class="m-1">
+                            <img :src="image.url" class="card-img-top" :alt="post.title" height="100">
+                        </div>
+                    </div>
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text">{{ post.content }}</p>
+                    <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                </div>
+            </div>
         </div>
     </div>
 </template>

@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <nav class="nav">
+    <nav class="nav container">
         <a class="nav-link" href="{{ route('index') }}">Create</a>
         <a class="nav-link" href="{{ route('post.index') }}">Posts</a>
     </nav>
