@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::namespace('App\Http\Controllers')->group(function(){
-    Route::get('/', IndexController::class);
+Route::namespace('App\Http\Controllers')->group(function () {
+    Route::get('/', IndexController::class)->name('index');
+    Route::controller(PostController::class)->prefix('posts')->group(function () {
+        Route::get('/', 'index')->name('post.index');
+    });
 });

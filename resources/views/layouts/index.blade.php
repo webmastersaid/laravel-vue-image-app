@@ -9,6 +9,10 @@
 </head>
 
 <body>
+    <nav class="nav">
+        <a class="nav-link" href="{{ route('index') }}">Create</a>
+        <a class="nav-link" href="{{ route('post.index') }}">Posts</a>
+    </nav>
     @yield('content')
 </body>
 
