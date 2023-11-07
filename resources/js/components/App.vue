@@ -26,6 +26,9 @@ export default {
             this.title = null
             this.content = null
             axios.post('/api/posts', data)
+                .then(res => {
+                    this.getPost()
+                })
         },
         getPost() {
             axios.get('/api/posts/latest')
