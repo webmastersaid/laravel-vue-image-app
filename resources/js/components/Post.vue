@@ -25,7 +25,8 @@ export default {
             <div class="card-body">
                 <div class="d-flex flex-wrap mb-3">
                     <div v-for="image in post.images" class="m-1">
-                        <img :src="image.url" class="card-img-top" :alt="post.title" height="100">
+                        <img :src="image.preview_url" class="img-fluid m-1" :alt="post.title">
+                        <img :src="image.url" class="img-fluid m-1" :alt="post.title">
                     </div>
                 </div>
                 <h5 class="card-title">{{ post.title }}</h5>
