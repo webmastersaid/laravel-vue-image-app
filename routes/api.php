@@ -25,4 +25,5 @@ Route::prefix('posts')->namespace('App\Http\Controllers\Post')->group(function()
     Route::get('/all', IndexController::class);
     Route::get('/latest', ShowController::class);
     Route::post('/', StoreController::class);
+    Route::patch('/{post}', UpdateController::class);
 });

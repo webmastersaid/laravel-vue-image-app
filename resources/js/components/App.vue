@@ -1,6 +1,6 @@
 <script>
 import Dropzone from 'dropzone';
-import { VueEditor } from "vue3-editor";
+import { VueEditor, f } from "vue3-editor";
 
 export default {
     data() {
@@ -12,6 +12,9 @@ export default {
                 title: '',
                 content: '',
             },
+            isEdit: false,
+            imageIdsForDelete: [],
+            imageUrlsForDelete: [],
         };
     },
     methods: {
@@ -43,13 +46,54 @@ export default {
 
             axios.post('/api/posts/images', data)
                 .then(res => {
-                    const url = res.data.url; // Get url from response
+                    const url = res.data.url;
                     Editor.insertEmbed(cursorLocation, "image", url);
                     resetUploader();
                 })
                 .catch(err => {
                     console.log(err);
                 });
+        },
+        edit() {
+            this.title = this.post.title
+            this.content = this.post.content
+            this.post.images.forEach(image => {
+                const file = { id: image.id, name: image.name, size: image.size };
+                this.dropzone.displayExistingFile(file, image.preview_url);
+            })
+
+            this.isEdit = true
+        },
+        update() {
+            const data = new FormData();
+            const files = this.dropzone.getAcceptedFiles();
+            files.forEach(file => {
+                data.append('images[]', file);
+                this.dropzone.removeFile(file);
+            });
+            this.imageIdsForDelete.forEach(id => {
+                data.append('image_ids_for_delete[]', id)
+            })
+            this.imageUrlsForDelete.forEach(url => {
+                data.append('image_urls_for_delete', url)
+            })
+            data.append('title', this.title);
+            data.append('content', this.content);
+            data.append('_method', 'PATCH')
+            this.title = null;
+            this.content = null;
+            axios.post(`/api/posts/${this.post.id}`, data)
+                .then(res => {
+                    const previews = this.dropzone.previewsContainer.querySelectorAll('.dz-preview')
+                    previews.forEach(preview => {
+                        preview.remove()
+                    })
+                    this.getPost();
+                });
+            this.isEdit = false
+        },
+        handleImageRemoved(url) {
+            console.log(url)
         }
     },
     mounted() {
@@ -58,6 +102,9 @@ export default {
             autoProcessQueue: false,
             addRemoveLinks: true
         });
+        this.dropzone.on('removedfile', file => {
+            this.imageIdsForDelete.push(file.id)
+        })
         this.getPost();
     },
     components: { VueEditor }
@@ -75,10 +122,12 @@ export default {
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <VueEditor id="content" v-model="content" @imageAdded="handleImageAdded" useCustomImageHandler />
+            <VueEditor id="content" v-model="content" @imageAdded="handleImageAdded" @imageRemoved="handleImageRemoved"
+                useCustomImageHandler />
         </div>
         <div class="mb3">
-            <button @click.prevent="store" type="button" class="btn btn-primary">Add</button>
+            <button v-if="!isEdit" @click.prevent="store" type="button" class="btn btn-primary">Add</button>
+            <button v-if="isEdit" @click.prevent="update" type="button" class="btn btn-primary">Update</button>
         </div>
         <div class="pt-5">
             <h1>Latest post</h1>
@@ -92,7 +141,8 @@ export default {
                     </div>
                     <h5 class="card-title">{{ post.title }}</h5>
                     <div class="card-title ql-editor" v-html="post.content"></div>
-                    <p class="card-text"><small class="text-body-secondary">{{post.created_at}}</small></p>
+                    <p class="card-text"><small class="text-body-secondary">{{ post.created_at }}</small></p>
+                    <a href="#" @click="edit(post)" type="button" class="btn btn-primary">Edit</a>
                 </div>
             </div>
         </div>
