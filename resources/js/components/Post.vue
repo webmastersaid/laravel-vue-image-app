@@ -30,9 +30,15 @@ export default {
                     </div>
                 </div>
                 <h5 class="card-title">{{ post.title }}</h5>
-                <p class="card-text">{{ post.content }}</p>
-                <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                <div class="card-text ql-editor" v-html="post.content"></div>
+                <p class="card-text"><small class="text-body-secondary">{{ post.created_at }}</small></p>
             </div>
         </div>
     </div>
 </template>
+<style>
+.dz-success-mark,
+.dz-error-mark {
+    display: none;
+}
+</style>

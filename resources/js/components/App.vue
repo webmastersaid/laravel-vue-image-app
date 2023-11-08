@@ -1,5 +1,6 @@
 <script>
 import Dropzone from 'dropzone';
+import { VueEditor } from "vue3-editor";
 
 export default {
     data() {
@@ -11,30 +12,44 @@ export default {
                 title: '',
                 content: '',
             },
-        }
+        };
     },
     methods: {
         store() {
-            const data = new FormData()
-            const files = this.dropzone.getAcceptedFiles()
+            const data = new FormData();
+            const files = this.dropzone.getAcceptedFiles();
             files.forEach(file => {
-                data.append('images[]', file)
-                this.dropzone.removeFile(file)
-            })
-            data.append('title', this.title)
-            data.append('content', this.content)
-            this.title = null
-            this.content = null
+                data.append('images[]', file);
+                this.dropzone.removeFile(file);
+            });
+            data.append('title', this.title);
+            data.append('content', this.content);
+            this.title = null;
+            this.content = null;
             axios.post('/api/posts', data)
                 .then(res => {
-                    this.getPost()
-                })
+                    this.getPost();
+                });
         },
         getPost() {
             axios.get('/api/posts/latest')
                 .then(res => {
-                    this.post = res.data.data
+                    this.post = res.data.data;
+                });
+        },
+        handleImageAdded(file, Editor, cursorLocation, resetUploader) {
+            var data = new FormData();
+            data.append("image", file);
+
+            axios.post('/api/posts/images', data)
+                .then(res => {
+                    const url = res.data.url; // Get url from response
+                    Editor.insertEmbed(cursorLocation, "image", url);
+                    resetUploader();
                 })
+                .catch(err => {
+                    console.log(err);
+                });
         }
     },
     mounted() {
@@ -42,9 +57,10 @@ export default {
             url: '/api/posts',
             autoProcessQueue: false,
             addRemoveLinks: true
-        })
-        this.getPost()
-    }
+        });
+        this.getPost();
+    },
+    components: { VueEditor }
 }
 </script>
 <template>
@@ -55,11 +71,11 @@ export default {
         </div>
         <div class="mb-3">
             <label for="image">Image</label>
-            <div ref="dropzone" id="image" class="btn btn-outline-dark d-block p-5 w-25">Upload image</div>
+            <div ref="dropzone" id="image" class="btn btn-outline-dark d-block p-5 w-25">Drag and drop image here</div>
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <textarea v-model="content" class="form-control" id="content" placeholder="Some content"></textarea>
+            <VueEditor id="content" v-model="content" @imageAdded="handleImageAdded" useCustomImageHandler />
         </div>
         <div class="mb3">
             <button @click.prevent="store" type="button" class="btn btn-primary">Add</button>
@@ -75,8 +91,8 @@ export default {
                         </div>
                     </div>
                     <h5 class="card-title">{{ post.title }}</h5>
-                    <p class="card-text">{{ post.content }}</p>
-                    <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                    <div class="card-title ql-editor" v-html="post.content"></div>
+                    <p class="card-text"><small class="text-body-secondary">{{post.created_at}}</small></p>
                 </div>
             </div>
         </div>

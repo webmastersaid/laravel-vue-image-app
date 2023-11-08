@@ -19,6 +19,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('posts')->namespace('App\Http\Controllers\Post')->group(function(){
+    Route::prefix('images')->namespace('Image')->group(function(){
+        Route::post('/', StoreController::class);
+    });
     Route::get('/all', IndexController::class);
     Route::get('/latest', ShowController::class);
     Route::post('/', StoreController::class);
